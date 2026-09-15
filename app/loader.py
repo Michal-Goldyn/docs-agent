@@ -1,4 +1,5 @@
 from app.config import settings
+from app.embeddings import embed_many
 from pathlib import Path
 import hashlib
 import psycopg
@@ -42,6 +43,9 @@ def expand_code_refs(content: str, docs_root: Path) -> str:
 
 
 def split_by_header(content: str, prefix: str = "## "):
+    '''
+    Tnie tekst po nagłówku danego poziomu
+    '''
     chunks = []
     current_section = None
     current_lines = []
@@ -73,6 +77,12 @@ def split_by_header(content: str, prefix: str = "## "):
     return chunks
 
 def split_into_chunks(content: str, prefix: str = "## ", parent_section: str | None = None):
+    '''
+    Używa narzędzia split_by_header i podejmuje decyzje:
+    kawałek krótszy niż 100 znaków -> odłóż do bufora, doklej do następnego
+    kawałek do 2000 znaków -> w porządku, bierzesz
+    dłuższy -> zawołaj samą siebie z głębszym nagłówkiem
+    '''
     results = []
     pending = ""
 
@@ -102,28 +112,30 @@ def split_into_chunks(content: str, prefix: str = "## ", parent_section: str | N
 
     return results
 
+def get_all_documents():
+    with psycopg.connect(settings.database_url) as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT id, source FROM documents")
+            return cur.fetchall()
 
+def index_documents(docs: list):
+    for doc_id, source in docs:
+        full_path = settings.docs_path / source
+        content = full_path.read_text(encoding="utf-8")
+        content = expand_code_refs(content, settings.docs_root)
+        chunks = split_into_chunks(content)
+        chunk_content_list = [chunk['content'] for chunk in chunks]
+        vectors = embed_many(chunk_content_list)
+        #print(source, len(chunks), len(vectors))
+        with psycopg.connect(settings.database_url) as conn:
+            with conn.cursor() as cur:
+                cur.execute("DELETE FROM chunks WHERE document_id = %s", (doc_id,))
+                for i, chunk in enumerate(chunks):
+                    cur.execute("""
+                        INSERT INTO chunks(document_id, position, section, content, embedding)
+                        VALUES (%s, %s, %s, %s, %s)
+                    """, (doc_id, chunk["position"], chunk["section"], chunk["content"], str(vectors[i])))
 
 if __name__ == "__main__":
-    files = list(md_files(settings.docs_path))
-    lengths = []
-    test=[]
-
-    for f in files:
-        content = f.read_text(encoding="UTF-8")
-        content = expand_code_refs(content, settings.docs_root)
-        for chunk in split_into_chunks(content):
-            lengths.append(len(chunk["content"]))
-            if len(chunk["content"]) < 100:
-                print(repr(chunk["content"]), "|", chunk["section"])
-            if "{*" in chunk["content"]:
-                test.append(chunk["content"])
-            if len(chunk["content"]) > 5000:
-                print(len(chunk["content"]), "|", chunk["section"])
-            if chunk["section"] and "<" in chunk["section"]:
-                print("HTML w sekcji:", chunk["section"])
-    print("fragmentów:", len(lengths))
-    print("min:", min(lengths))
-    print("max:", max(lengths))
-    print("średnia:", sum(lengths) // len(lengths))
-    print("powyżej 2000:", len([n for n in lengths if n > 2000]))
+    docs = get_all_documents()
+    index_documents(docs)

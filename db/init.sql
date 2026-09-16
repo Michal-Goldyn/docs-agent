@@ -19,3 +19,4 @@ CREATE TABLE chunks(
     embedding VECTOR(1536) NOT NULL,
     UNIQUE (document_id, position)
 );
+CREATE INDEX ON chunks USING hnsw (embedding vector_cosine_ops);

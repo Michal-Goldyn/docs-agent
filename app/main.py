@@ -1,5 +1,6 @@
-from fastapi import FastAPI
 from app.config import settings
+from app.search import search_chunks
+from fastapi import FastAPI
 import psycopg
 
 app = FastAPI()
@@ -15,3 +16,7 @@ def check_connection():
             cur.execute("SELECT 1")
             result = cur.fetchone()
     return {"db": "ok", "result": result}
+
+@app.get("/search")
+def search(q: str):
+    return search_chunks(q)

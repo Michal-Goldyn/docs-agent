@@ -1,0 +1,19 @@
+[
+    {"q": "How do I upload a file?", "expected": ["request-files.md"]},
+    {"q": "How do I validate a query parameter?", "expected": ["query-params-str-validations.md"]},
+    {"q": "How do I return a 404 error?", "expected": ["handling-errors.md"]},
+    {"q": "How do I run a background task after sending a response?", "expected": ["background-tasks.md"]},
+    {"q": "How do I connect to a SQL database?", "expected": ["sql-databases.md"]},
+    {"q": "How do I configure CORS?", "expected": ["cors.md"]},
+    {"q": "How do I test an endpoint?", "expected": ["testing.md"]},
+    {"q": "How do I receive and validate a JSON request body with Pydantic?", "expected": ["body.md"]},
+    {"q": "How do I define an integer path parameter?", "expected": ["path-params.md"]},
+    {"q": "How do I read an HTTP request header?", "expected": ["header-params.md"]},
+    {"q": "How do I define a response model?", "expected": ["response-model.md"]},
+    {"q": "How do I share logic between endpoints using Depends?", "expected": ["dependencies/index.md"]},
+    {"q": "How do I organize endpoints into separate modules using APIRouter?", "expected": ["bigger-applications.md"]},
+    {"q": "How do I use OAuth2 with a Bearer token?", "expected": ["security/first-steps.md", "security/simple-oauth2.md"]},
+    {"q": "my endpoint is slow, how do I do the work later?", "expected": ["background-tasks.md"]},
+    {"q": "how do I stop the browser from blocking my API calls?", "expected": ["cors.md"]},
+    {"q": "how do I hide the password field from the API response?", "expected": ["response-model.md", "extra-models.md"]}
+]

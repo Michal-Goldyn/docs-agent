@@ -12,40 +12,35 @@ def answer(question: str) -> str:
     return generate_answer(question, chunks)
 
 def generate_answer(question: str, chunks: list) -> str:
-    if chunks and (chunks[0]["similarity"] >= settings.similarity_threshold):
+    context = ""
+    for i, chunk in enumerate(chunks):
+        context += f"[{i+1}] source: {chunk['source']} | url: {doc_url(chunk['source'])} | section: {chunk['section']}\n"
+        context += chunk['content'] + "\n\n"
+    
+    message = client.messages.create(
+        model = "claude-haiku-4-5",
+        max_tokens=1024,
+        system = f"""You are a documentation assistant. Answer using ONLY the context above.
 
-        context = ""
-        for i, chunk in enumerate(chunks):
-            context += f"[{i+1}] source: {chunk['source']} | url: {doc_url(chunk['source'])} | section: {chunk['section']}\n"
-            context += chunk['content'] + "\n\n"
-        
-        message = client.messages.create(
-            model = "claude-haiku-4-5",
-            max_tokens=1024,
-            system = f"""You are a documentation assistant. Answer using ONLY the context above.
-
-                        Rules:
-                        - If the context does not contain the answer, reply exactly: "I didn't find an answer in the documentation."
-                        - Never use knowledge outside the context. Never invent code or APIs.
-                        - Be precise and concise.
-                        - After each claim, put the source url in parentheses on the same line, e.g. (https://fastapi.tiangolo.com/tutorial/request-files/). Do not add a list of sources at the end.
-                        
-                        Context: 
-                        <context>
-                            {context}
-                        </context>
-                        """,
-            messages=[
-                {
-                    "role": "user",
-                    "content": question,
-                }
-            ]
-        )
-        return message.content[0].text
-
-    else:
-        return "I didn't find proper data in the database"
+                    Rules:
+                    - If the context does not contain the answer, reply exactly: "I didn't find an answer in the documentation."
+                    - Never use knowledge outside the context. Never invent code or APIs.
+                    - Be precise and concise.
+                    - After each claim, put the source url in parentheses on the same line, e.g. (https://fastapi.tiangolo.com/tutorial/request-files/). Do not add a list of sources at the end.
+                    
+                    Context: 
+                    <context>
+                        {context}
+                    </context>
+                    """,
+        messages=[
+            {
+                "role": "user",
+                "content": question,
+            }
+        ]
+    )
+    return message.content[0].text
 
 
 if __name__ == "__main__":

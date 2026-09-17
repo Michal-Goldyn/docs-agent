@@ -4,17 +4,18 @@ from anthropic import Anthropic
 
 client = Anthropic()
 
-def doc_url(source: str = "https://fastapi.tiangolo.com/tutorial/"):
+def doc_url(source: str) -> str:
     return settings.docs_base_url + source.removesuffix(".md")
 
 def answer(question: str) -> str:
+    chunks = search_chunks(question)
+    return generate_answer(question, chunks)
 
-    reply = search_chunks(question)
-
-    if reply and (reply[0]["similarity"] >= settings.similarity_threshold):
+def generate_answer(question: str, chunks: list) -> str:
+    if chunks and (chunks[0]["similarity"] >= settings.similarity_threshold):
 
         context = ""
-        for i, chunk in enumerate(reply):
+        for i, chunk in enumerate(chunks):
             context += f"[{i+1}] source: {chunk['source']} | url: {doc_url(chunk['source'])} | section: {chunk['section']}\n"
             context += chunk['content'] + "\n\n"
         

@@ -1,7 +1,7 @@
 from app.config import settings
 from app.search import search_chunks
 from app.answer import answer
-from app.graph import compiled
+from app.graph import rag_graph
 from fastapi import FastAPI
 import psycopg
 
@@ -29,5 +29,5 @@ def search(q: str):
 @app.get("/ask")
 def ask(q: str):
     """Answer a question about FastAPI docs using retrieved context."""
-    result = compiled.invoke({"question": q})
+    result = rag_graph.invoke({"question": q})
     return {"answer": result["answer"]}

@@ -7,23 +7,27 @@ from langgraph.graph import StateGraph, START, END
 
 
 class State(TypedDict):
+    """State passed between graph nodes: the question, retrieved chunks, final answer."""
     question: str
     chunks: list
     answer: str
 
 def retrieve(state: State) -> dict:
-    return {"chunks": search_chunks(state["question"])}
+    """Search the docs and keep only chunks above the similarity threshold."""
+    chunks = search_chunks(state["question"])
+    good_chunks = [c for c in chunks if c["similarity"] >= settings.similarity_threshold]
+    return {"chunks": good_chunks}
 
 def generate(state: State) -> dict:
+    """Generate an answer from the retrieved chunks."""
     return {"answer": generate_answer(state["question"], state["chunks"])}
 
 def route_after_retrieve(state: State) -> str:
-    if state["chunks"] and (state["chunks"][0]["similarity"] >= settings.similarity_threshold):
-        return "generate"
-    else: 
-        return "no_answer"
+    """Route to generation if any chunk passed the threshold, otherwise to no_answer."""
+    return "generate" if state["chunks"] else "no_answer"
 
 def no_answer(state: State) -> dict:
+    """Return a fixed message when retrieval found nothing relevant."""
     return {"answer": "I didn't find an answer in the documentation."}
 
 graph = StateGraph(State)
@@ -40,9 +44,9 @@ graph.add_edge("no_answer", END)
 graph.add_edge("generate", END)
 
 
-compiled = graph.compile()
+rag_graph = graph.compile()
 
 if __name__ == "__main__":
-    print(compiled.invoke({"question": "How do I upload a file in FastAPI?"})["answer"])
+    print(rag_graph.invoke({"question": "How do I upload a file in FastAPI?"})["answer"])
     print("---")
-    print(compiled.invoke({"question": "How do I train a neural network in PyTorch?"})["answer"])
+    print(rag_graph.invoke({"question": "How do I train a neural network in PyTorch?"})["answer"])

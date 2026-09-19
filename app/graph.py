@@ -47,6 +47,7 @@ graph.add_edge("generate", END)
 rag_graph = graph.compile()
 
 if __name__ == "__main__":
-    print(rag_graph.invoke({"question": "How do I upload a file in FastAPI?"})["answer"])
-    print("---")
-    print(rag_graph.invoke({"question": "How do I train a neural network in PyTorch?"})["answer"])
+    #print(rag_graph.invoke({"question": "How do I upload a file in FastAPI?"})["answer"])
+    #print("---")
+    #print(rag_graph.invoke({"question": "How do I train a neural network in PyTorch?"})["answer"])
+    print(rag_graph.get_graph().draw_mermaid())

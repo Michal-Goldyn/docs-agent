@@ -14,3 +14,7 @@ jobs:
           python-version: "3.11"
       - run: pip install -r requirements.txt
       - run: pytest
+        env:
+          DATABASE_URL: postgresql://user:pass@localhost:5433/db
+          DOCS_PATH: /tmp
+          DOCS_ROOT: /tmp

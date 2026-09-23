@@ -18,3 +18,5 @@ jobs:
           DATABASE_URL: postgresql://user:pass@localhost:5433/db
           DOCS_PATH: /tmp
           DOCS_ROOT: /tmp
+          OPENAI_API_KEY: dummy
+          ANTHROPIC_API_KEY: dummy

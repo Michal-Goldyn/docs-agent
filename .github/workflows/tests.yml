@@ -1,0 +1,22 @@
+name: tests
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - run: pytest
+        env:
+          DATABASE_URL: postgresql://user:pass@localhost:5433/db
+          DOCS_PATH: /tmp
+          DOCS_ROOT: /tmp
+          OPENAI_API_KEY: dummy
+          ANTHROPIC_API_KEY: dummy

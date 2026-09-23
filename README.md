@@ -1,3 +1,4 @@
+![tests](https://github.com/Michal-Goldyn/docs-agent/actions/workflows/tests.yml/badge.svg)
 # Docs Agent
 RAG agent that answers questions about FastAPI documentation, with source citations.
 
@@ -88,4 +89,4 @@ Interactive docs at `http://127.0.0.1:8000/docs`.
 - Retrieval is vector-only, so questions phrased as symptoms rather than in the vocabulary of the docs can miss - hybrid search or query rewriting with a cheap model would help
 - No conversation history: every question is answered independently, follow-ups like "and how do I test that?" have no context
 - One language and one version are indexed, although the schema supports filtering by both
-- No unit tests yet: the chunker in particular has enough edge cases to deserve them
+- Tests: the chunker has unit tests, retrieval has no integration tests - that would need a database in CI
